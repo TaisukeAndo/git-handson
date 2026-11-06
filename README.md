@@ -1,6 +1,6 @@
 # 物語リレー（Git ハンズオン用リポジトリ）
 
-アプリ開発エージェント構築セミナー（session2）で、Git と GitHub の操作を、**自分でコマンドを打って**体験するための練習用リポジトリです。
+アプリ開発エージェント構築セミナー（session3）で、Git と GitHub の操作を、**自分でコマンドを打って**体験するための練習用リポジトリです。
 
 ルールは簡単です。**グループごとに、1人1文ずつ、物語の続きを書いていきます。**
 最後の人にバトンが渡ったとき、物語が完結します。
@@ -26,9 +26,48 @@
   - 承認しないと、Push と、他の人の PR のマージができません
 - パソコンで、`git` が使える（ターミナルで `git --version` と打って、バージョンが出れば大丈夫です）
 - Git に、名前とメールアドレスを登録してある（`git config user.name` で名前が出れば大丈夫です）
+- パソコンで、GitHub CLI（`gh`）が使える（`gh --version` でバージョンが出れば大丈夫です）
+- 下の「GitHub にログインする」を済ませてある
 - 講師から、**グループの番号**と**自分の順番**、そのグループの**人数**を聞いている
 
 ターミナルは、Mac は「ターミナル」、Windows は「PowerShell」を使います。
+
+## 最初に1回だけ：GitHub にログインする（gh auth login）
+
+push（GitHub に送る）には、GitHub へのログインが必要です。このハンズオンでは、**SSH の鍵は使わず**、
+GitHub CLI（`gh`）を使って、ブラウザからログインします。
+
+まず、ログインできているかを確認します。
+
+```bash
+gh auth status
+```
+
+- 「Logged in to github.com」と出て、「Token scopes」の行に `workflow` があれば、準備は完了です
+- 「not logged in」などと出たときは、次のコマンドでログインします
+
+```bash
+gh auth login --git-protocol https --scopes workflow
+```
+
+質問には、次のように答えます（矢印キーで選び、Enter キーで決定）。
+
+1. 「Where do you use GitHub?」→ `GitHub.com`
+2. 「Authenticate Git with your GitHub credentials?」→ `Yes`
+3. 「How would you like to authenticate GitHub CLI?」→ `Login with a web browser`
+4. 表示された8文字のコード（例：`ABCD-1234`）を控えて、Enter キーを押す
+5. ブラウザが開いたら、コードを入力して「Continue」、続けて「Authorize github」を押す
+6. ターミナルに「Logged in as（自分のユーザー名）」と出れば完了です
+
+すでにログインしていて、`workflow` だけがない場合は、次のコマンドで足します。
+
+```bash
+gh auth refresh --scopes workflow
+```
+
+- `--git-protocol https` は、Git と GitHub のやり取りを、SSH ではなく HTTPS で行う指定です。SSH の鍵を作って登録する手間がかかりません
+- 2 の「Yes」で、`git push` のときにも、このログインが使われるようになります
+- `--scopes workflow` は、セミナーの第4セッションで、GitHub Actions の設定ファイルを GitHub に送るときに必要な権限です
 
 ## 最初に1回だけ：リポジトリを取得する（clone）
 
@@ -151,7 +190,9 @@ cat stories/story-01.txt
 
 | 症状 | 確認すること |
 |---|---|
-| `git push` で、権限エラーが出る | collaborator の招待を承認したか。GitHub にログインできているか |
+| `git push` で、権限エラーが出る | collaborator の招待を承認したか。`gh auth status` で、ログインできているか |
+| `git push` で、ユーザー名やパスワードを聞かれる | `gh auth setup-git` を実行してから、もう一度 push する（パスワードを入力しても、GitHub は受け付けません） |
+| `gh` が見つからないと出る | GitHub CLI が入っていない。講師に声をかける |
 | `git commit` で、名前を聞かれる | `git config --global user.name "自分の名前"` と、`git config --global user.email "メールアドレス"` を実行する |
 | `git switch -c` で、「すでにある」と出る | ブランチ名が、自分のグループと順番になっているか確認する |
 | PR の画面に、「conflict」（競合）と出る | 前の人の PR がマージされる前に書き始めた可能性がある。講師に声をかける（直し方は下） |
